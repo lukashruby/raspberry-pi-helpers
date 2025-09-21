@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Wayland Display Management CLI
+# A comprehensive tool for managing Wayland displays on Raspberry Pi
+#
+# Usage:
+#   wlr-display list
+#   wlr-display off HDMI-A-1 [HDMI-A-2 ...]
+#   wlr-display on HDMI-A-1 [HDMI-A-2 ...] [--mode 1920x1080@60]
+#   wlr-display toggle HDMI-A-1 [HDMI-A-2 ...]
+#
+# Notes:
+# - Auto-detects WAYLAND socket for the *current user session*
+# - Requires: wlr-randr
+# - Works over SSH without manual Wayland configuration
+
+err() { echo "Error: $*" >&2; exit 1; }
+
+# Ensure wlr-randr exists
+command -v wlr-randr >/dev/null || err "wlr-randr not found. Install with: sudo apt install wlr-randr"
+
+# Set environment to reach the Wayland session of the user that runs this command
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+
+# Pick the first available wayland socket; override by exporting WAYLAND_DISPLAY beforehand if you like
+if [[ -z "${WAYLAND_DISPLAY:-}" ]]; then
+  sock="$(ls "$XDG_RUNTIME_DIR"/wayland-* 2>/dev/null | head -n1 || true)"
+  [[ -n "$sock" ]] || err "No Wayland display socket found in $XDG_RUNTIME_DIR"
+  export WAYLAND_DISPLAY="$(basename "$sock")"
+fi
+
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+  list)
+    echo "Available displays:"
+    wlr-randr
+    ;;
+
+  off)
+    [[ $# -ge 1 ]] || err "Specify at least one output name (e.g., HDMI-A-1)"
+    for out in "$@"; do
+      echo "Turning off display: $out"
+      wlr-randr --output "$out" --off
+    done
+    ;;
+
+  on)
+    [[ $# -ge 1 ]] || err "Specify outputs (e.g., HDMI-A-1) and optionally --mode 1920x1080@60"
+    mode=""
+    # Collect outputs until we see --mode
+    outs=()
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --mode) shift; mode="$1";;
+        *) outs+=("$1");;
+      esac
+      shift || true
+    done
+    for out in "${outs[@]}"; do
+      if [[ -n "$mode" ]]; then
+        echo "Turning on display: $out with mode: $mode"
+        wlr-randr --output "$out" --on --mode "$mode"
+      else
+        echo "Turning on display: $out with preferred mode"
+        wlr-randr --output "$out" --on
+      fi
+    done
+    ;;
+
+  toggle)
+    [[ $# -ge 1 ]] || err "Specify at least one output name (e.g., HDMI-A-1)"
+    # Parse state: lines look like "HDMI-A-1 ... enabled"
+    mapfile -t lines < <(wlr-randr)
+    for out in "$@"; do
+      # Find the line that begins with the output name
+      line="$(printf '%s\n' "${lines[@]}" | awk -v o="$out" '$1==o{print;exit}')"
+      [[ -n "$line" ]] || err "Output not found: $out"
+      if grep -q "enabled" <<<"$line"; then
+        echo "Toggling display: $out (currently enabled -> turning off)"
+        wlr-randr --output "$out" --off
+      else
+        echo "Toggling display: $out (currently disabled -> turning on)"
+        # Default to "on" with current preferred mode
+        wlr-randr --output "$out" --on
+      fi
+    done
+    ;;
+
+  *)
+    cat >&2 <<USAGE
+Wayland Display Management CLI
+
+Usage:
+  wlr-display list
+  wlr-display off HDMI-A-1 [HDMI-A-2 ...]
+  wlr-display on HDMI-A-1 [HDMI-A-2 ...] [--mode 1920x1080@60]
+  wlr-display toggle HDMI-A-1 [HDMI-A-2 ...]
+
+Commands:
+  list    Show all available displays and their current states
+  off     Turn off specified displays
+  on      Turn on displays with optional mode specification
+  toggle  Toggle display states (on->off, off->on)
+
+Examples:
+  wlr-display list
+  wlr-display off HDMI-A-1
+  wlr-display on HDMI-A-1 --mode 1920x1080@60
+  wlr-display toggle HDMI-A-2
+  wlr-display off HDMI-A-1 HDMI-A-2
+
+Notes:
+  - Works over SSH without manual Wayland configuration
+  - Requires wlr-randr package
+  - Auto-detects Wayland socket for current user session
+USAGE
+    exit 2
+    ;;
+esac

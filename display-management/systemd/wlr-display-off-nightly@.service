@@ -1,0 +1,8 @@
+[Unit]
+Description=Turn OFF output %i nightly
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/wlr-display off %i
+User=%i
