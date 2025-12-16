@@ -29,7 +29,8 @@ A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing
 
 1. **Install the display management CLI:**
    ```bash
-   sudo ./install-display-service.sh
+   cd display-management
+   sudo ./install.sh
    ```
 
 2. **Basic usage:**
@@ -49,14 +50,15 @@ A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing
 
 3. **Optional: Set up systemd services for automation:**
    ```bash
-   ./setup-display-services.sh
+   cd display-management
+   ./setup-services.sh
    ```
 
 4. **Web Service (Optional):**
    ```bash
    # Install and start the web service for remote control
    cd display-management/web-service
-   ./install-web-service.sh
+   ./install.sh
    ```
    Access the web interface at `http://raspberry-pi/`
 
@@ -81,7 +83,6 @@ raspberry-pi-helpers/
 │   ├── README.md                      # Detailed documentation
 │   ├── display-setup.md               # Setup documentation
 │   ├── install.sh                     # CLI installation script
-│   ├── install-web-service.sh         # Web service installation
 │   ├── setup-services.sh              # Systemd services setup
 │   ├── wlr-display                    # Main CLI script
 │   ├── systemd/                       # Systemd service templates
@@ -97,7 +98,7 @@ raspberry-pi-helpers/
 │   │   ├── display_web_service.py    # Flask web application
 │   │   ├── display-web.service        # Systemd service
 │   │   ├── requirements.txt           # Python dependencies
-│   │   └── install-web-service.sh     # Installation script
+│   │   └── install.sh                 # Installation script
 │   └── examples/                      # Usage examples
 │       └── scheduled-displays.md
 └── CONTRIBUTING.md                    # Contribution guidelines
