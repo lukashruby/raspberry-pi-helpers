@@ -23,6 +23,34 @@ A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing
 - Raspberry Pi with Wayland (typically Raspberry Pi OS with desktop)
 - `wlr-randr` package
 
+## Tested Environment
+
+This project has been tested and verified on the following environment:
+
+**Hardware:**
+- Raspberry Pi 5 Model B Rev 1.1
+- 2x HDMI displays (ChangHong Electric Co.,Ltd 22P610FS)
+
+**Operating System:**
+- Debian GNU/Linux 12 (bookworm)
+- Kernel: Linux 6.12.47+rpt-rpi-2712 (aarch64)
+- Architecture: ARM64
+
+**Software Versions:**
+- Python: 3.11.2
+- pip: 23.0.1
+- systemd: 252.39-1~deb12u1
+- wlr-randr: 0.2.0-2+rpt1
+- python3-venv: 3.11.2-1+b1
+- python3-flask: 2.2.2-3 (system package, but web service uses virtual environment)
+
+**Display Setup:**
+- Wayland compositor with wlr-randr support
+- 2 HDMI outputs: HDMI-A-1 and HDMI-A-2
+- Both displays support up to 1920x1080@75Hz
+
+> **Note:** While tested on this specific configuration, the tools should work on other Raspberry Pi models and Debian-based distributions with Wayland support.
+
 ## Quick Start
 
 ### Display Management
