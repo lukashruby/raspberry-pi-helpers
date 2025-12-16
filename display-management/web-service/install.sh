@@ -5,9 +5,24 @@ echo "Installing display control system..."
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REMOTE_USER="lukas"
-REMOTE_HOST="raspberry-pi"
-REMOTE_DIR="/home/lukas/display-control"
+
+# Load environment variables from .env file if it exists
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    echo "Loading configuration from .env file..."
+    source "${SCRIPT_DIR}/.env"
+else
+    echo "Warning: .env file not found. Using default values."
+    echo "Create .env file from .env.example and update with your settings."
+    REMOTE_USER="lukas"
+    REMOTE_HOST="raspberry-pi"
+    REMOTE_DIR="/home/lukas/display-control"
+fi
+
+# Validate required variables
+if [ -z "${REMOTE_USER}" ] || [ -z "${REMOTE_HOST}" ] || [ -z "${REMOTE_DIR}" ]; then
+    echo "Error: REMOTE_USER, REMOTE_HOST, and REMOTE_DIR must be set in .env file"
+    exit 1
+fi
 
 # Create remote directory
 echo "Creating remote directory..."
@@ -59,7 +74,7 @@ echo "  - Displays will turn OFF at 19:00 daily (HDMI-A-2 first, then HDMI-A-1)"
 echo "  - Displays will turn ON at 7:30 daily (HDMI-A-1 first, then HDMI-A-2)"
 echo ""
 echo "Web service:"
-echo "  - Access at: http://raspberry-pi/"
+echo "  - Access at: http://${REMOTE_HOST}/"
 echo "  - Check status: sudo systemctl status display-web.service"
 echo ""
 echo "To check timer status:"

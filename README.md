@@ -56,11 +56,15 @@ A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing
 
 4. **Web Service (Optional):**
    ```bash
-   # Install and start the web service for remote control
+   # Configure connection settings (optional, defaults provided)
    cd display-management/web-service
+   cp .env.example .env
+   # Edit .env with your Raspberry Pi connection details
+   
+   # Install and start the web service for remote control
    ./install.sh
    ```
-   Access the web interface at `http://raspberry-pi/`
+   Access the web interface at `http://<your-raspberry-pi-host>/`
 
 5. **Scheduled Display Control (Optional):**
    ```bash
