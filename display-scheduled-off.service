@@ -1,0 +1,11 @@
+[Unit]
+Description=Turn off displays at 19:00 (HDMI-A-2 first, then HDMI-A-1)
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'systemctl --user start wlr-display-off@HDMI-A-2 && sleep 1 && systemctl --user start wlr-display-off@HDMI-A-1'
+
+[Install]
+WantedBy=default.target
+

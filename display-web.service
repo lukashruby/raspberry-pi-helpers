@@ -1,0 +1,27 @@
+[Unit]
+Description=Display Control Web Service
+After=network.target default.target
+Wants=default.target
+
+[Service]
+Type=simple
+# Run as root to bind to port 80, but set HOME and XDG_RUNTIME_DIR for user context
+User=root
+Group=root
+WorkingDirectory=/home/lukas/display-control
+ExecStart=/home/lukas/display-control/venv/bin/python3 /home/lukas/display-control/display_web_service.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables - important for systemctl --user commands
+Environment="HOME=/home/lukas"
+Environment="USER=lukas"
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target
+

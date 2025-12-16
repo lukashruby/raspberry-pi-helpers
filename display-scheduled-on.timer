@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to turn on displays at 7:30 daily
+Requires=display-scheduled-on.service
+
+[Timer]
+OnCalendar=*-*-* 07:30:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

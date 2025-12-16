@@ -1,0 +1,11 @@
+[Unit]
+Description=Turn on displays at 7:30 (HDMI-A-1 first, then HDMI-A-2)
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'systemctl --user start wlr-display-on@HDMI-A-1 && sleep 1 && systemctl --user start wlr-display-on@HDMI-A-2'
+
+[Install]
+WantedBy=default.target
+

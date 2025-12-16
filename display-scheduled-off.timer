@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to turn off displays at 19:00 daily
+Requires=display-scheduled-off.service
+
+[Timer]
+OnCalendar=*-*-* 19:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
