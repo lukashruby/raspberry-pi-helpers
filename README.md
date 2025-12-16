@@ -1,173 +1,116 @@
-# Raspberry Pi Display Control System
+# Raspberry Pi Helpers
 
-This project provides automated and web-based control for Raspberry Pi displays connected via HDMI.
+A collection of useful utilities and services for Raspberry Pi systems, designed to make common tasks easier and more automated.
 
-## Features
+## Available Helpers
 
-1. **Scheduled Display Control**: Automatically turns displays off at 19:00 and on at 7:30 daily
-2. **Web Interface**: Simple web UI with buttons to control displays (runs on port 80)
+### 1. Display Management Service
 
-## Installation
+A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing you to turn displays on/off via SSH and optionally schedule display operations.
 
-Run the installation script from your local machine:
+**Features:**
+- Turn displays on/off via command line
+- Toggle display states
+- List available displays
+- Set specific display modes
+- SSH-friendly (no manual Wayland socket configuration needed)
+- Optional systemd service integration
+- Scheduled display operations with timers
+- **Web interface** for remote display control (runs on port 80)
+- **Daily scheduled timers** (auto-off at 19:00, auto-on at 7:30)
 
-```bash
-./install.sh
+**Requirements:**
+- Raspberry Pi with Wayland (typically Raspberry Pi OS with desktop)
+- `wlr-randr` package
+
+## Quick Start
+
+### Display Management
+
+1. **Install the display management CLI:**
+   ```bash
+   sudo ./install-display-service.sh
+   ```
+
+2. **Basic usage:**
+   ```bash
+   # List available displays
+   wlr-display list
+   
+   # Turn off a display
+   wlr-display off HDMI-A-1
+   
+   # Turn on a display with specific mode
+   wlr-display on HDMI-A-1 --mode 1920x1080@60
+   
+   # Toggle display state
+   wlr-display toggle HDMI-A-1
+   ```
+
+3. **Optional: Set up systemd services for automation:**
+   ```bash
+   ./setup-display-services.sh
+   ```
+
+4. **Web Service (Optional):**
+   ```bash
+   # Install and start the web service for remote control
+   cd display-management/web-service
+   ./install-web-service.sh
+   ```
+   Access the web interface at `http://raspberry-pi/`
+
+5. **Scheduled Display Control (Optional):**
+   ```bash
+   # Set up daily timers (off at 19:00, on at 7:30)
+   cd display-management
+   # Copy timer services to ~/.config/systemd/user/
+   cp systemd/display-scheduled-*.{service,timer} ~/.config/systemd/user/
+   systemctl --user daemon-reload
+   systemctl --user enable --now display-scheduled-off.timer
+   systemctl --user enable --now display-scheduled-on.timer
+   ```
+
+## Project Structure
+
+```
+raspberry-pi-helpers/
+├── README.md                           # This file
+├── LICENSE                             # MIT License
+├── display-management/                 # Display management helper
+│   ├── README.md                      # Detailed documentation
+│   ├── display-setup.md               # Setup documentation
+│   ├── install.sh                     # CLI installation script
+│   ├── install-web-service.sh         # Web service installation
+│   ├── setup-services.sh              # Systemd services setup
+│   ├── wlr-display                    # Main CLI script
+│   ├── systemd/                       # Systemd service templates
+│   │   ├── wlr-display-off@.service
+│   │   ├── wlr-display-on@.service
+│   │   ├── wlr-display-off-nightly@.service
+│   │   ├── wlr-display-off-nightly@.timer
+│   │   ├── display-scheduled-off.service
+│   │   ├── display-scheduled-on.service
+│   │   ├── display-scheduled-off.timer
+│   │   └── display-scheduled-on.timer
+│   ├── web-service/                   # Web interface
+│   │   ├── display_web_service.py    # Flask web application
+│   │   ├── display-web.service        # Systemd service
+│   │   ├── requirements.txt           # Python dependencies
+│   │   └── install-web-service.sh     # Installation script
+│   └── examples/                      # Usage examples
+│       └── scheduled-displays.md
+└── CONTRIBUTING.md                    # Contribution guidelines
 ```
 
-This will:
-- Copy all necessary files to the Raspberry Pi
-- Install `python3-venv` if needed
-- Create a Python virtual environment
-- Install Python dependencies (Flask) in the virtual environment
-- Set up systemd timer services for scheduled control
-- Set up systemd service for the web interface
-- Enable and start all services
+## Contributing
 
-**Note**: The installation script requires SSH access to the Raspberry Pi. Make sure you can SSH into `raspberry-pi` as user `lukas` without a password prompt (or use SSH keys).
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## Components
+## License
 
-### Scheduled Display Control
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Services**:
-- `display-scheduled-off.service` - Turns off displays (HDMI-A-2 first, then HDMI-A-1)
-- `display-scheduled-on.service` - Turns on displays (HDMI-A-1 first, then HDMI-A-2)
-- `display-scheduled-off.timer` - Triggers at 19:00 daily
-- `display-scheduled-on.timer` - Triggers at 7:30 daily
+## Support
 
-**Location**: `~/.config/systemd/user/` (user-level services)
-
-**Commands**:
-```bash
-# Check timer status
-systemctl --user list-timers
-
-# Check service status
-systemctl --user status display-scheduled-off.service
-systemctl --user status display-scheduled-on.service
-
-# Manually trigger services
-systemctl --user start display-scheduled-off.service
-systemctl --user start display-scheduled-on.service
-```
-
-### Web Service
-
-**Service**: `display-web.service` (system-level, runs on port 80)
-
-**Location**: `/etc/systemd/system/display-web.service`
-
-**Application Location**: `/home/lukas/display-control/`
-
-**Virtual Environment**: `/home/lukas/display-control/venv/`
-
-**Access**: Open `http://raspberry-pi/` in your browser
-
-**Features**:
-- Turn all displays on immediately
-- Turn all displays on for 1 hour (auto-off after 1 hour)
-- Turn all displays off immediately
-- Modern, responsive web interface
-- Real-time status updates
-
-**Commands**:
-```bash
-# Check service status
-sudo systemctl status display-web.service
-
-# View logs
-sudo journalctl -u display-web.service -f
-
-# Restart service
-sudo systemctl restart display-web.service
-```
-
-## Display Control Order
-
-When turning displays **OFF**:
-1. HDMI-A-2 (second display) - turned off first
-2. HDMI-A-1 (first display) - turned off second
-
-When turning displays **ON**:
-1. HDMI-A-1 (first display) - turned on first
-2. HDMI-A-2 (second display) - turned on second
-
-## Manual Control
-
-You can also control displays manually using the existing services:
-
-```bash
-# Turn displays on/off individually
-systemctl --user start wlr-display-on@HDMI-A-1
-systemctl --user start wlr-display-on@HDMI-A-2
-systemctl --user start wlr-display-off@HDMI-A-1
-systemctl --user start wlr-display-off@HDMI-A-2
-
-# Or use the wlr-display script directly
-wlr-display on HDMI-A-1
-wlr-display off HDMI-A-2
-wlr-display list
-```
-
-## Troubleshooting
-
-### Web service not accessible
-- Check if service is running: `sudo systemctl status display-web.service`
-- Check if port 80 is in use: `sudo netstat -tlnp | grep :80` or `sudo ss -tlnp | grep :80`
-- Check logs: `sudo journalctl -u display-web.service -n 50`
-- Verify virtual environment exists: `ls -la /home/lukas/display-control/venv/`
-- Test Python script manually: `sudo /home/lukas/display-control/venv/bin/python3 /home/lukas/display-control/display_web_service.py`
-
-### Scheduled timers not working
-- Check timer status: `systemctl --user list-timers`
-- Check if user systemd is running: `systemctl --user status`
-- Check service logs: `journalctl --user -u display-scheduled-off.service`
-
-### Display commands not working
-- Verify user systemd services exist: `systemctl --user list-unit-files | grep wlr-display`
-- Check if wlr-randr is installed: `which wlr-randr`
-- Test manually: `wlr-display list`
-
-## Files
-
-- `display-scheduled-off.service` - Service to turn displays off
-- `display-scheduled-on.service` - Service to turn displays on
-- `display-scheduled-off.timer` - Timer for 19:00 daily
-- `display-scheduled-on.timer` - Timer for 7:30 daily
-- `display_web_service.py` - Flask web application
-- `display-web.service` - Systemd service for web app
-- `requirements.txt` - Python dependencies
-- `install.sh` - Installation script
-
-## Requirements
-
-- Raspberry Pi with 2 HDMI displays
-- Wayland/WLR-RandR setup (existing `wlr-display` script)
-- Python 3 with `python3-venv` package
-- Flask (installed in virtual environment via requirements.txt)
-- User-level systemd services for display control (already set up)
-- SSH access to Raspberry Pi (passwordless recommended)
-
-## Installation Details
-
-The web service runs in a Python virtual environment to avoid conflicts with system-managed Python packages. The virtual environment is automatically created during installation at `/home/lukas/display-control/venv/`.
-
-The systemd service runs as root (to bind to port 80) but executes commands as user `lukas` to access user-level systemd services for display control.
-
-## Updating
-
-To update the web service after making changes:
-
-```bash
-# Copy updated files
-scp display_web_service.py lukas@raspberry-pi:/home/lukas/display-control/
-scp requirements.txt lukas@raspberry-pi:/home/lukas/display-control/
-
-# Update dependencies if needed
-ssh lukas@raspberry-pi "cd /home/lukas/display-control && source venv/bin/activate && pip install -r requirements.txt"
-
-# Restart the service
-ssh lukas@raspberry-pi "sudo systemctl restart display-web.service"
-```
-
+If you encounter any issues or have questions, please open an issue on GitHub.

@@ -1,0 +1,9 @@
+[Unit]
+Description=Turn OFF output %i nightly
+
+[Timer]
+OnCalendar=22:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Turn ON Wayland output %i
+After=default.target
+
+[Service]
+Type=oneshot
+# Change the mode if you want a different default
+ExecStart=/usr/local/bin/wlr-display on %i --mode 1920x1080@60
+User=%i
+
+[Install]
+WantedBy=default.target
