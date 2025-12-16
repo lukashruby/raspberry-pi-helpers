@@ -65,6 +65,13 @@ A comprehensive solution for managing Wayland displays on Raspberry Pi, allowing
    ./install.sh
    ```
    Access the web interface at `http://<your-raspberry-pi-host>/`
+   
+   ![Web Interface](display-management/web-service/web-interface.png)
+   
+   The web interface provides three main controls:
+   - **Turn All Displays On** - Immediately turns on both displays
+   - **Turn On For 1 Hour** - Turns on displays and automatically turns them off after 1 hour
+   - **Turn All Displays Off** - Immediately turns off both displays
 
 5. **Scheduled Display Control (Optional):**
    ```bash
@@ -102,7 +109,8 @@ raspberry-pi-helpers/
 │   │   ├── display_web_service.py    # Flask web application
 │   │   ├── display-web.service        # Systemd service
 │   │   ├── requirements.txt           # Python dependencies
-│   │   └── install.sh                 # Installation script
+│   │   ├── install.sh                 # Installation script
+│   │   └── web-interface.png          # Web interface screenshot
 │   └── examples/                      # Usage examples
 │       └── scheduled-displays.md
 └── CONTRIBUTING.md                    # Contribution guidelines
